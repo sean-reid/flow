@@ -1,0 +1,118 @@
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: 2.5rem;
+  padding-top: 1rem;
+}
+
+/* ── Progress ──────────────────────────────────────── */
+.progressTrack {
+  width: 100%;
+  max-width: 680px;
+  height: 1px;
+  background: var(--border);
+  position: relative;
+  border-radius: 1px;
+}
+
+.progressFill {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  background: var(--accent);
+  border-radius: 1px;
+  transition: width 80ms linear;
+}
+
+/* ── Word stage ────────────────────────────────────── */
+.wordWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 180px;
+}
+
+.guideLine {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 1px;
+  height: 110%;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--border) 30%,
+    var(--border) 70%,
+    transparent
+  );
+  pointer-events: none;
+}
+
+.word {
+  font-family: var(--font-serif);
+  font-size: clamp(3rem, 8vw, 6.5rem);
+  font-weight: 300;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  text-align: center;
+  position: relative;
+  opacity: 0;
+  transition: none;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.word.flash {
+  animation: wordIn 120ms ease forwards;
+}
+
+/* Pivot highlight — the letter to fix gaze on */
+.wordLeft  { color: var(--text); }
+.wordPivot { color: var(--accent); }
+.wordRight { color: var(--text); }
+
+.done {
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
+  color: var(--muted);
+  letter-spacing: 0.3em;
+  font-weight: 300;
+}
+
+@keyframes wordIn {
+  0%   { opacity: 0; transform: translateY(6px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Stats ─────────────────────────────────────────── */
+.stats {
+  display: flex;
+  gap: 2.5rem;
+  align-items: baseline;
+}
+
+.stat {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.statVal {
+  font-family: var(--font-serif);
+  font-size: 1.6rem;
+  font-weight: 300;
+  color: var(--text);
+  min-width: 4ch;
+  text-align: right;
+}
+
+.statLabel {
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+}

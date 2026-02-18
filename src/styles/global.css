@@ -1,0 +1,48 @@
+/* ── Variables ─────────────────────────────────────── */
+:root {
+  --bg:        #090909;
+  --surface:   #111111;
+  --border:    #1e1e1e;
+  --text:      #e8e2d9;
+  --muted:     #4a4a4a;
+  --accent:    #c8a06e;
+  --accent-dim:#7a5f3e;
+  --danger:    #8b4040;
+
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-mono:  'Azeret Mono', 'Courier New', monospace;
+
+  --radius: 4px;
+  --transition: 160ms ease;
+}
+
+/* ── Reset ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #root {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-mono);
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: var(--font-mono);
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+textarea {
+  font-family: var(--font-mono);
+  resize: none;
+}
+
+input[type="file"] { display: none; }
+
+::selection { background: var(--accent-dim); color: var(--text); }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }

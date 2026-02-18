@@ -1,0 +1,43 @@
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.resetBtn {
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  padding: 0.6rem 1.1rem;
+  border-radius: var(--radius);
+  transition: color var(--transition), border-color var(--transition);
+}
+
+.resetBtn:hover {
+  color: var(--text);
+  border-color: var(--muted);
+}
+
+.playBtn {
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 0.65rem 2rem;
+  border-radius: var(--radius);
+  transition: opacity var(--transition), background var(--transition);
+}
+
+.play {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.pause {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent-dim);
+}
+
+.playBtn:hover { opacity: 0.8; }

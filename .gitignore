@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Build artifacts (docs/ is intentionally committed for GitHub Pages)
+dist/
+.vite/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Editor & OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime
+*.local
