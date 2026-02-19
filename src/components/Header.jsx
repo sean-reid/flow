@@ -27,7 +27,7 @@ export default function Header() {
           </p>
           <p>
             <span className={styles.rule}>02</span>
-            Do <em>not</em> sub-vocalize. Silence the inner voice that reads each word aloud.
+            <span>Do <em>not</em> sub-vocalize. Silence the inner voice that reads each word aloud.</span>
           </p>
           <p>
             <span className={styles.rule}>03</span>
