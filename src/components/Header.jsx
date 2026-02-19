@@ -1,8 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './Header.module.css';
+
+function getInitialTheme() {
+  try {
+    const saved = localStorage.getItem('flow-theme');
+    if (saved === 'light' || saved === 'dark') return saved;
+  } catch {}
+  return 'dark';
+}
 
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const [theme, setTheme] = useState(getInitialTheme);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    try { localStorage.setItem('flow-theme', theme); } catch {}
+  }, [theme]);
 
   return (
     <header className={styles.header}>
@@ -11,13 +25,23 @@ export default function Header() {
         <span className={styles.tagline}>speed reader</span>
       </div>
 
-      <button
-        className={styles.howBtn}
-        onClick={() => setOpen(o => !o)}
-        aria-expanded={open}
-      >
-        {open ? 'close' : 'how to read'}
-      </button>
+      <div className={styles.headerActions}>
+        <button
+          className={styles.themeBtn}
+          onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
+          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          aria-label="Toggle theme"
+        >
+          <span className={styles.themeIcon}>{theme === 'dark' ? '☀' : '☽'}</span>
+        </button>
+        <button
+          className={styles.howBtn}
+          onClick={() => setOpen(o => !o)}
+          aria-expanded={open}
+        >
+          {open ? 'close' : 'how to read'}
+        </button>
+      </div>
 
       {open && (
         <div className={styles.tips}>

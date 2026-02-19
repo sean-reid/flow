@@ -29,10 +29,38 @@
   text-transform: uppercase;
 }
 
-.howBtn {
+.headerActions {
   position: absolute;
   top: 1rem;
   right: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.themeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--muted);
+  transition: color var(--transition), border-color var(--transition);
+}
+
+.themeBtn:hover {
+  color: var(--accent);
+  border-color: var(--accent-dim);
+}
+
+.themeIcon {
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
+.howBtn {
   font-size: 0.65rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;

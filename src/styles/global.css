@@ -16,6 +16,18 @@
   --transition: 160ms ease;
 }
 
+/* ── Light mode ────────────────────────────────────── */
+[data-theme="light"] {
+  --bg:        #f5f0e8;
+  --surface:   #ebe5da;
+  --border:    #d6cfc3;
+  --text:      #2a2520;
+  --muted:     #91887a;
+  --accent:    #9a7440;
+  --accent-dim:#c4a87a;
+  --danger:    #a84e4e;
+}
+
 /* ── Reset ─────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -46,3 +58,5 @@ input[type="file"] { display: none; }
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+[data-theme="light"] ::selection { background: var(--accent-dim); color: var(--bg); }:-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
