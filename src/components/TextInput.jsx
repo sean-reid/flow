@@ -1,39 +1,52 @@
 import React, { useState, useRef } from 'react';
 import { parseText } from '../utils/parseText';
+import { extractText, ACCEPT_ATTR } from '../utils/parseEbook';
 import styles from './TextInput.module.css';
 
 export default function TextInput({ onWords }) {
   const [dragging, setDragging] = useState(false);
-  const [text, setText]         = useState('');
+  const [text,     setText]     = useState('');
+  const [loading,  setLoading]  = useState(false);
+  const [errMsg,   setErrMsg]   = useState('');
+  const [fileName, setFileName] = useState('');
   const fileRef = useRef(null);
 
-  function handleText(raw) {
+  function submitText(raw) {
     const words = parseText(raw);
-    if (words.length) onWords(words);
+    if (words.length) {
+      setErrMsg('');
+      onWords(words);
+    } else {
+      setErrMsg('No readable words found in this file.');
+    }
   }
 
-  function handleFile(file) {
-    if (!file || !file.type.startsWith('text')) return;
-    const reader = new FileReader();
-    reader.onload = e => { setText(e.target.result); handleText(e.target.result); };
-    reader.readAsText(file);
+  async function handleFile(file) {
+    if (!file) return;
+    setFileName(file.name);
+    setLoading(true);
+    setErrMsg('');
+    try {
+      const raw = await extractText(file);
+      setText(raw);
+      submitText(raw);
+    } catch (e) {
+      setErrMsg(e.message ?? 'Failed to parse file.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   function handleDrop(e) {
     e.preventDefault();
     setDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file) handleFile(file);
-  }
-
-  function handleSubmit() {
-    if (text.trim()) handleText(text);
+    handleFile(e.dataTransfer.files[0]);
   }
 
   return (
     <div className={styles.wrap}>
       <div
-        className={`${styles.dropzone} ${dragging ? styles.dragOver : ''}`}
+        className={`${styles.dropzone} ${dragging ? styles.dragOver : ''} ${loading ? styles.busy : ''}`}
         onDragOver={e => { e.preventDefault(); setDragging(true); }}
         onDragLeave={() => setDragging(false)}
         onDrop={handleDrop}
@@ -42,30 +55,39 @@ export default function TextInput({ onWords }) {
           className={styles.textarea}
           placeholder="Paste your text here…"
           value={text}
-          onChange={e => setText(e.target.value)}
+          onChange={e => { setText(e.target.value); setErrMsg(''); }}
           spellCheck={false}
+          disabled={loading}
         />
         <div className={styles.dropHint}>
-          {dragging ? 'release to load' : 'drag & drop a .txt file anywhere here'}
+          {loading   ? `parsing ${fileName}…`
+            : dragging ? 'release to load'
+            : 'drop a file or paste text'}
         </div>
       </div>
 
+      {errMsg && <p className={styles.error}>⚠ {errMsg}</p>}
+
       <div className={styles.actions}>
-        <button className={styles.fileBtn} onClick={() => fileRef.current.click()}>
+        <button
+          className={styles.fileBtn}
+          onClick={() => fileRef.current.click()}
+          disabled={loading}
+        >
           load file
         </button>
         <input
           ref={fileRef}
           type="file"
-          accept=".txt,text/plain"
+          accept={ACCEPT_ATTR}
           onChange={e => handleFile(e.target.files[0])}
         />
         <button
           className={styles.startBtn}
-          onClick={handleSubmit}
-          disabled={!text.trim()}
+          onClick={() => submitText(text)}
+          disabled={!text.trim() || loading}
         >
-          parse &amp; read →
+          {loading ? 'parsing…' : 'parse & read →'}
         </button>
       </div>
     </div>

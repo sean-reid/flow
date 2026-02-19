@@ -11,12 +11,17 @@
   position: relative;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  transition: border-color var(--transition);
+  transition: border-color var(--transition), background var(--transition);
 }
 
 .dropzone.dragOver {
   border-color: var(--accent);
   background: rgba(200, 160, 110, 0.04);
+}
+
+.dropzone.busy {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .textarea {
@@ -34,13 +39,14 @@
 }
 
 .textarea::placeholder { color: var(--muted); }
+.textarea:disabled     { cursor: wait; }
 
 .dropHint {
   position: absolute;
   bottom: 0.75rem;
   right: 1rem;
   font-size: 0.6rem;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   color: var(--muted);
   pointer-events: none;
   text-transform: uppercase;
@@ -48,6 +54,12 @@
 }
 
 .dragOver .dropHint { color: var(--accent); }
+
+.error {
+  font-size: 0.65rem;
+  color: var(--danger);
+  letter-spacing: 0.05em;
+}
 
 .actions {
   display: flex;
@@ -66,10 +78,12 @@
   transition: color var(--transition), border-color var(--transition);
 }
 
-.fileBtn:hover {
+.fileBtn:hover:not(:disabled) {
   color: var(--text);
   border-color: var(--muted);
 }
+
+.fileBtn:disabled { opacity: 0.35; cursor: wait; }
 
 .startBtn {
   margin-left: auto;
@@ -83,9 +97,5 @@
   transition: opacity var(--transition);
 }
 
-.startBtn:disabled {
-  opacity: 0.25;
-  cursor: default;
-}
-
+.startBtn:disabled          { opacity: 0.25; cursor: default; }
 .startBtn:not(:disabled):hover { opacity: 0.85; }
