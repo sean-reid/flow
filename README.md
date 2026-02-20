@@ -6,7 +6,9 @@ A minimalist, client-side speed reading app that flashes one word at a time usin
 
 ## Features
 
-- **Automatic speed ramp** — starts at 120 WPM and accelerates to 650 WPM over the first ~80 words using an ease-in cubic curve, so your brain can warm up before hitting full speed.
+- **Automatic speed ramp** — starts at 120 WPM and accelerates to your chosen peak speed over the first ~80 words using an ease-in cubic curve, so your brain can warm up before hitting full speed.
+- **Adjustable peak speed** — the **max** field in the stats row lets you set your WPM ceiling (100–1200). Edit the number and press Enter or click away to apply. The ramp always targets your chosen peak.
+- **Seek** — click or drag anywhere along the progress bar to jump to that position in the text. Works with mouse and touch. Playback continues from the new position if already playing.
 - **Optical pivot highlighting** — each word's focal letter is tinted amber, guiding your gaze to the natural reading center of the word.
 - **Light & dark themes** — toggle between a warm parchment light mode and a deep-black dark mode via the header button. Your choice is saved across sessions.
 - **Broad file support** — paste raw text or load any of these formats directly in the browser (no server, no upload):
@@ -37,16 +39,19 @@ npm run preview
 
 1. **Load text** — paste into the textarea, drag and drop a file, or use the file picker.
 2. Click **Parse & Read** — the app strips markdown syntax, HTML tags, URLs, and punctuation artifacts to produce a clean word list. Markdown files (`.md`) get full CommonMark-aware conversion (headers, links, images, code blocks, tables, and inline formatting are all resolved to plain text before word extraction).
-3. Click **Start** — words begin flashing at 120 WPM and ramp up to 650 WPM.
-4. Use **Pause/Resume** to stop and continue, or **Reset** to start over.
+3. Click **Start** — words begin flashing at 120 WPM and ramp up to your chosen peak (default 650 WPM).
+4. **Seek** — click or drag the progress bar at any time to jump to a different position.
+5. **Adjust peak speed** — edit the **max** field (next to the word counter) to raise or lower your WPM ceiling, then press Enter or click away.
+6. Use **Pause/Resume** to stop and continue, or **Reset** to start over.
 
 ## How the speed ramp works
 
 The timing engine (`src/hooks/useSpeedReader.js`) calculates a per-word delay using a cubic ease-in curve:
 
 - **Ramp length** is normally 80 words, but is capped at 60% of the total word count so short texts don't spend most of their time accelerating.
-- Once the ramp completes, every subsequent word is shown at the full 650 WPM peak.
+- Once the ramp completes, every subsequent word is shown at your chosen peak WPM (default 650, adjustable via the **max** field).
 - If you reach the end of the text, pressing Start again restarts from the beginning.
+- **Seeking** while paused moves the position without changing playback state; seeking while playing immediately continues from the new word.
 
 ## Project structure
 

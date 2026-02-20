@@ -1,29 +1,27 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 const START_WPM      = 120;
-const PEAK_WPM       = 650;
+export const DEFAULT_PEAK_WPM = 650;
 const RAMP_WORDS     = 80;  // fixed number of words to reach peak speed
 const MIN_RAMP_WORDS = 10;  // floor for very short texts (never ramp in <10 words)
 const MAX_RAMP_RATIO = 0.6; // cap ramp at 60% of total so short texts don't spend
                              // nearly all their time accelerating
 
 function rampLength(total) {
-  // For short texts, cap the ramp to MAX_RAMP_RATIO of total words,
-  // but never below MIN_RAMP_WORDS (unless the text itself is that short).
   const ratioBasedCap = Math.floor(total * MAX_RAMP_RATIO);
   const floor = Math.min(MIN_RAMP_WORDS, total);
   return Math.max(floor, Math.min(RAMP_WORDS, ratioBasedCap));
 }
 
-function wpmForIndex(index, total) {
+function wpmForIndex(index, total, peakWpm) {
   const rampEnd = rampLength(total);
-  if (index >= rampEnd) return PEAK_WPM;
+  if (index >= rampEnd) return peakWpm;
   const t = index / rampEnd;
   // ease-in cubic — slow start, rapid finish
-  return START_WPM + (PEAK_WPM - START_WPM) * (t * t * t);
+  return START_WPM + (peakWpm - START_WPM) * (t * t * t);
 }
 
-export function useSpeedReader(words) {
+export function useSpeedReader(words, maxWpm = DEFAULT_PEAK_WPM) {
   const [index,   setIndex]   = useState(0);
   const [playing, setPlaying] = useState(false);
   const [wpm,     setWpm]     = useState(START_WPM);
@@ -31,9 +29,11 @@ export function useSpeedReader(words) {
   const timeoutRef = useRef(null);
   const indexRef   = useRef(0);
   const wordsRef   = useRef(words);
+  const maxWpmRef  = useRef(maxWpm);
 
   // sync refs
   useEffect(() => { wordsRef.current = words; }, [words]);
+  useEffect(() => { maxWpmRef.current = maxWpm; }, [maxWpm]);
   useEffect(() => { indexRef.current = index; }, [index]);
 
   const stop = useCallback(() => {
@@ -44,18 +44,20 @@ export function useSpeedReader(words) {
   const reset = useCallback(() => {
     stop();
     setIndex(0);
+    indexRef.current = 0;
     setWpm(START_WPM);
   }, [stop]);
 
-  // schedule next word
+  // show word at i, then schedule i+1
   const schedule = useCallback((i) => {
     const total = wordsRef.current.length;
     if (i >= total) { stop(); return; }
-    const currentWpm = wpmForIndex(i, total);
+    const currentWpm = wpmForIndex(i, total, maxWpmRef.current);
     setWpm(Math.round(currentWpm));
+    setIndex(i);
+    indexRef.current = i;
     const delay = 60000 / currentWpm;
     timeoutRef.current = setTimeout(() => {
-      setIndex(i + 1);
       schedule(i + 1);
     }, delay);
   }, [stop]);
@@ -71,7 +73,6 @@ export function useSpeedReader(words) {
 
   const toggle = useCallback(() => {
     if (index >= words.length && words.length > 0) {
-      setIndex(0);
       indexRef.current = 0;
       setPlaying(true);
     } else {
@@ -79,5 +80,15 @@ export function useSpeedReader(words) {
     }
   }, [index, words.length]);
 
-  return { index, playing, wpm, toggle, reset };
+  const seek = useCallback((newIndex) => {
+    const clamped = Math.max(0, Math.min(newIndex, wordsRef.current.length - 1));
+    clearTimeout(timeoutRef.current);
+    setIndex(clamped);
+    indexRef.current = clamped;
+    if (playing) {
+      schedule(clamped);
+    }
+  }, [playing, schedule]);
+
+  return { index, playing, wpm, toggle, reset, seek };
 }
