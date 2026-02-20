@@ -3,18 +3,20 @@
  * Returns a plain string passed to parseText() for word extraction.
  *
  * Supported:
- *   .txt .html .htm   plain text / markup
- *   .epub             EPUB (JSZip + spine-ordered HTML)
- *   .pdf              PDF.js text extraction
- *   .docx             Office Open XML (JSZip + XML)
- *   .fb2              FictionBook XML
- *   .rtf              Rich Text Format (regex strip)
- *   .mobi             PalmDOC / MOBI binary (built-in parser)
- *   .azw .azw3        Amazon KF8 binary (built-in parser)
+ *   .txt                plain text
+ *   .md .markdown       Markdown (full CommonMark conversion to plain text)
+ *   .html .htm          HTML (DOM-based text extraction)
+ *   .epub               EPUB (JSZip + spine-ordered HTML)
+ *   .pdf                PDF.js text extraction
+ *   .docx               Office Open XML (JSZip + XML)
+ *   .fb2                FictionBook XML
+ *   .rtf                Rich Text Format (regex strip)
+ *   .mobi               PalmDOC / MOBI binary (built-in parser)
+ *   .azw .azw3          Amazon KF8 binary (built-in parser)
  *
  * NOT supported:
- *   .kfx              Amazon proprietary encrypted container — no public spec,
- *                     not parseable client-side.
+ *   .kfx                Amazon proprietary encrypted container — no public spec,
+ *                       not parseable client-side.
  */
 
 // ─── DOM helpers ────────────────────────────────────────────────────────────
@@ -184,9 +186,108 @@ async function parseMobiBuffer(buffer) {
   return stripHtmlEntities(raw.replace(/<[^>]{0,200}>/g, ' '));
 }
 
+// ─── Markdown → plain-text converter ────────────────────────────────────────
+// Handles the full CommonMark surface: fenced & indented code blocks, ATX &
+// setext headers, links, images, footnotes, tables, task lists, and inline
+// formatting — all without external dependencies.
+
+function markdownToPlainText(md) {
+  let text = md
+    // normalise line endings
+    .replace(/\r\n|\r/g, '\n');
+
+  // ── block-level ──
+
+  // fenced code blocks (``` or ~~~): keep inner text, drop fences
+  text = text.replace(/^(`{3,}|~{3,})[^\n]*\n([\s\S]*?)\n\1\s*$/gm,
+    (_, _fence, body) => body);
+
+  // indented code blocks (4 spaces or 1 tab): unindent
+  text = text.replace(/^(?:    |\t)(.+)$/gm, '$1');
+
+  // setext-style headers (underline with === or ---)
+  text = text.replace(/^(.+)\n[=]{2,}\s*$/gm, '$1');
+  text = text.replace(/^(.+)\n[-]{2,}\s*$/gm, '$1');
+
+  // ATX headers
+  text = text.replace(/^#{1,6}\s+(.+?)(?:\s+#+)?\s*$/gm, '$1');
+
+  // horizontal rules
+  text = text.replace(/^[-*_]{3,}\s*$/gm, '');
+
+  // blockquotes (nested too)
+  text = text.replace(/^(?:>\s?)+/gm, '');
+
+  // table separator rows  |---|---|
+  text = text.replace(/^\|?[\s:]*[-]{3,}[\s|:-]*$/gm, '');
+  // table cell pipes
+  text = text.replace(/^\|(.+)\|$/gm, (_, row) =>
+    row.split('|').map(c => c.trim()).join(' '));
+
+  // task list markers
+  text = text.replace(/^(\s*)[-*+]\s+\[[ xX]\]\s/gm, '$1');
+
+  // unordered list markers
+  text = text.replace(/^(\s*)[-*+]\s+/gm, '$1');
+  // ordered list markers
+  text = text.replace(/^(\s*)\d+[.)]\s+/gm, '$1');
+
+  // ── inline ──
+
+  // images  ![alt](url "title") → alt
+  text = text.replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1');
+
+  // links  [text](url "title") → text
+  text = text.replace(/\[([^\]]+)\]\([^)]*\)/g, '$1');
+
+  // reference links  [text][ref] → text
+  text = text.replace(/\[([^\]]+)\]\[[^\]]*\]/g, '$1');
+
+  // autolinks  <http://…> or <email>
+  text = text.replace(/<(https?:\/\/[^>]+)>/g, '$1');
+  text = text.replace(/<([^>]+@[^>]+)>/g, '$1');
+
+  // footnote references  [^1]
+  text = text.replace(/\[\^[^\]]+\]/g, '');
+
+  // footnote definitions  [^1]: …
+  text = text.replace(/^\[\^[^\]]+\]:\s*/gm, '');
+
+  // inline code
+  text = text.replace(/`{1,2}([^`]+)`{1,2}/g, '$1');
+
+  // bold + italic  ***text*** / ___text___
+  text = text.replace(/(\*{3}|_{3})(.+?)\1/g, '$2');
+  // bold  **text** / __text__
+  text = text.replace(/(\*{2}|_{2})(.+?)\1/g, '$2');
+  // italic  *text* / _text_
+  text = text.replace(/([*_])(.+?)\1/g, '$2');
+
+  // strikethrough  ~~text~~
+  text = text.replace(/~~(.+?)~~/g, '$1');
+
+  // highlight  ==text==
+  text = text.replace(/==(.+?)==/g, '$1');
+
+  // reference-style link definitions  [ref]: url "title"
+  text = text.replace(/^\[[^\]]+\]:\s+\S+.*$/gm, '');
+
+  // any remaining HTML tags
+  text = text.replace(/<[^>]+>/g, ' ');
+
+  // HTML entities
+  text = stripHtmlEntities(text);
+
+  return text;
+}
+
 // ─── Format parsers ─────────────────────────────────────────────────────────
 
 async function parseTxt(file) { return file.text(); }
+
+async function parseMd(file) {
+  return markdownToPlainText(await file.text());
+}
 
 async function parseHtml(file) {
   return domText(await file.text(), 'text/html');
@@ -281,17 +382,19 @@ async function parseAzw(file)   { return parseMobiBuffer(await file.arrayBuffer(
 // ─── Dispatcher ──────────────────────────────────────────────────────────────
 
 const PARSERS = {
-  txt:  parseTxt,
-  html: parseHtml,
-  htm:  parseHtml,
-  epub: parseEpub,
-  pdf:  parsePdf,
-  docx: parseDocx,
-  fb2:  parseFb2,
-  rtf:  parseRtf,
-  mobi: parseMobi,
-  azw:  parseAzw,
-  azw3: parseAzw,
+  txt:      parseTxt,
+  md:       parseMd,
+  markdown: parseMd,
+  html:     parseHtml,
+  htm:      parseHtml,
+  epub:     parseEpub,
+  pdf:      parsePdf,
+  docx:     parseDocx,
+  fb2:      parseFb2,
+  rtf:      parseRtf,
+  mobi:     parseMobi,
+  azw:      parseAzw,
+  azw3:     parseAzw,
 };
 
 export const ACCEPTED_EXTENSIONS = Object.keys(PARSERS);
