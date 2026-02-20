@@ -2,6 +2,8 @@
 
 A minimalist, client-side speed reading app that flashes one word at a time using the **RSVP** (Rapid Serial Visual Presentation) technique. Words are highlighted at their optical center so your eyes stay still and your reading speed goes up.
 
+<a href="https://www.producthunt.com/products/flow-speed-reader?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-flow-speed-reader" target="_blank" rel="noopener noreferrer"><img alt="FLOW Speed Reader - Let the text FLOW through you | Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1082463&amp;theme=light&amp;t=1771616816047"></a>
+
 ## Features
 
 - **Automatic speed ramp** — starts at 120 WPM and accelerates to 650 WPM over the first ~80 words using an ease-in cubic curve, so your brain can warm up before hitting full speed.
